@@ -7,15 +7,39 @@
 //
 
 import UIKit
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
 	var window: UIWindow?
+	
+	var taskID: Int = 0
 
 
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 		// Override point for customization after application launch.
+		
+		// Realmのmigrationを書いてあげる
+		let config = Realm.Configuration(
+			schemaVersion: 1,
+			migrationBlock: { migration, oldSchemaVersion in
+				if (oldSchemaVersion < 1) {
+					// Nothing to do!
+				}
+			}
+		)
+		// realmのdefaultのconfigurationを指定する
+		Realm.Configuration.defaultConfiguration = config
+		
+		self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
+//		self.window?.rootViewController = TaskTableViewController()
+//		self.window?.rootViewController = CreateTaskViewController()
+		self.window?.rootViewController = MainViewController()
+//			UINavigationController(rootViewController: TaskTableViewController())
+		self.window?.makeKeyAndVisible()
+		
+		
 		return true
 	}
 
