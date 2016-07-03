@@ -20,9 +20,12 @@ class TaskTableViewController: UIViewController, UITableViewDelegate, UITableVie
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
+		
+		
 		let getURL: NSURL = NSURL(string: "http://localhost:3000/todos")!
 		let request: NSMutableURLRequest = NSMutableURLRequest(URL: getURL)
 		
+		// NOTE: GETして差異があるものを叩く？
 		request.HTTPMethod = "GET"
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 		request.addValue("application/json", forHTTPHeaderField: "Accept")
@@ -30,8 +33,10 @@ class TaskTableViewController: UIViewController, UITableViewDelegate, UITableVie
 		let requestTask = NSURLSession.sharedSession().dataTaskWithRequest(request, completionHandler: { data, response, error in
 			if (error == nil) {
 				let result = NSString(data: data!, encoding: NSUTF8StringEncoding)!
-				print(result)
+				let json = JSON.parse(String(result))
+				print(json)
 				// このあと、ここに同期させるための処理を書きます。
+				// ローカルのデータを元に、データを同期させるので、こっちからデータを送るイメージ
 				
 			}
 		})

@@ -12,6 +12,7 @@ import RealmSwift
 class CreateTaskViewController: UIViewController {
 	let taskNameField: UITextField = UITextField()
 	let descriptionField: UITextField = UITextField()
+	let realm = try! Realm()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,10 +43,10 @@ class CreateTaskViewController: UIViewController {
     }
 	
 	func saveData(sender: UIButton) {
-		let realm = try! Realm()
 		let task: Task = Task()
 		let lastTask: Task? = realm.objects(Task).sorted("id").last
-		task.id = lastTask == nil ? 1 : lastTask!.id + 1
+		let taskID: Int = lastTask == nil ? 1 : lastTask!.id + 1
+		task.id = taskID
 		task.label = taskNameField.text!
 		task.desc = descriptionField.text!
 		task.done = false
@@ -75,10 +76,23 @@ class CreateTaskViewController: UIViewController {
 		
 		let requestTask = NSURLSession.sharedSession().dataTaskWithRequest(request, completionHandler: {data, response, error in
 			if (error == nil) {
+				
+				// このあたりを追記していきましょう
+				// 同じスレッド上でしかrealmのデータ書き換えができない(self.realmはすでに違うスレッド)
+            	let rlm = try! Realm()
 				let result = NSString(data: data!, encoding: NSUTF8StringEncoding)!
-//				print(result)
+				//	print(result)
 				let json = JSON.parse(String(result))
-				print(json["id"]) 
+				print(json["id"])
+				
+				let newTask = rlm.objects(Task).filter("id == \(taskID)").first!
+				print(newTask)
+				try! rlm.write({
+    				newTask.remoteID = json["id"].asInt!
+				})
+				
+				print(newTask)
+				
 			} else {
 				print("しっぱい！！")
 				print(error!)
@@ -88,8 +102,8 @@ class CreateTaskViewController: UIViewController {
 		requestTask.resume()
 		
 		
-		try! realm.write({
-			realm.add(task)
+		try! self.realm.write({
+			self.realm.add(task)
 		})
 		self.navigationController!.pushViewController(TaskTableViewController(), animated: true)
 		
